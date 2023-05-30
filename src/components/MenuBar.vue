@@ -7,7 +7,7 @@ import UserServices from "../services/UserServices";
 const router = useRouter();
 
 const user = ref(null);
-const title = ref("Travel frontend");
+const title = ref("Bon Voyage");
 const logoURL = ref("");
 
 onMounted(() => {
