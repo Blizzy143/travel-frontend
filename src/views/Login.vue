@@ -32,7 +32,7 @@ async function createAccount() {
   await UserServices.addUser(user.value)
     .then(() => {
       snackbar.value.value = true;
-      snackbar.value.color = "green";
+      snackbar.value.color = "blue";
       snackbar.value.text = "Account created successfully!";
       router.push({ name: "login" });
     })
@@ -111,7 +111,7 @@ function closeSnackBar() {
             color="secondary"
             @click="navigateToRecipes()"
           >
-            View Published Recipes
+            View Popular Iternaries
           </v-btn>
         </v-card-title>
       </v-card>
