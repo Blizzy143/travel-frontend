@@ -2,7 +2,7 @@ import apiClient from "./services";
 
 // Get all destinations
 const getAllDestinations = async () => {
-  return apiClient.get("/destinations")
+   return apiClient.get("/destinations");
 };
 
 // Get a destination by ID

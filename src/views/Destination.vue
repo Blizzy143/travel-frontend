@@ -20,7 +20,8 @@ export default {
     async fetchDestinations() {
       try {
         // Use the destination service to fetch all destinations
-        this.destinations = await destinationService.getAllDestinations();
+        this.destinations = await (await destinationService.getAllDestinations()).data;
+        console.log('Fetched destinations:', this.destinations);
       } catch (error) {
         console.error("Error in fetching destinations:", error);
       }
@@ -34,7 +35,7 @@ export default {
     <div id="body">
       <v-row align="center" class="mb-4">
         <v-col cols="10"
-          ><v-card-title class="pl-0 text-h4 font-weight-bold"
+          ><v-card-title class="pl-0 text-h4"
             >Destinations
           </v-card-title>
         </v-col>
@@ -47,7 +48,6 @@ export default {
     </div>
   </v-container>
   <div>
-    <h1>All Destinations</h1>
     <DestinationList :destinations="destinations" />
   </div>
 </template>
