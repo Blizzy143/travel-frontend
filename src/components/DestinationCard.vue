@@ -14,7 +14,7 @@
     </v-card-subtitle>
 
     <v-card-text>
-
+      <div>{{ destination.name }}</div>
       <div>{{ destination.description }}</div>
     </v-card-text>
 

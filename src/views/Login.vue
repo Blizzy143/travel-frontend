@@ -20,12 +20,12 @@ const user = ref({
 
 onMounted(async () => {
   if (localStorage.getItem("user") !== null) {
-    router.push({ name: "recipes" });
+    router.push({ name: "destinations" });
   }
 });
 
-function navigateToRecipes() {
-  router.push({ name: "recipes" });
+function navigateToDestinations() {
+  router.push({ name: "destinations" });
 }
 
 async function createAccount() {
@@ -48,16 +48,20 @@ async function login() {
   console.log(user.value);
   await UserServices.loginUser(user)
     .then((data) => {
+      snackbar.value.value = true;
+      snackbar.value.color = "green";
+      snackbar.value.text = data;
+      
       window.localStorage.setItem("user", JSON.stringify(data.data));
       snackbar.value.value = true;
       snackbar.value.color = "green";
       snackbar.value.text = "Login successful!";
-      router.push({ name: "recipes" });
+      router.push({ name: "destinations" });
     })
     .catch((error) => {
       console.log(error);
       snackbar.value.value = true;
-      snackbar.value.color = "error";
+      snackbar.value.color = "red";
       snackbar.value.text = error.response.data.message;
     });
 }
@@ -109,7 +113,7 @@ function closeSnackBar() {
             class="ml-2"
             variant="flat"
             color="secondary"
-            @click="navigateToRecipes()"
+            @click="navigateToDestinations()"
           >
             View Popular Iternaries
           </v-btn>
