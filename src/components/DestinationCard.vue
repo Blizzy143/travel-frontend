@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mx-auto" max-width="600">
+  <v-card class="mx-auto mb-4" max-width="600">
     <v-img
       class="align-end text-white"
       height="300"
@@ -26,7 +26,7 @@
   </v-card>
 </template>
 
-<script>
+<script >
 export default {
   name: "DestinationCard",
   props: {

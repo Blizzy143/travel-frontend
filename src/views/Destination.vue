@@ -1,11 +1,11 @@
 <script setup>
-import { onMounted } from "vue";
-import { ref } from "vue";
-import DestinationList from "../components/DestinationList.vue";
+import { onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 import destinationService from "../services/DestinationService.js";
 
-const destinations = ref([]);
-const isAdd = ref(false);
+const route = useRouter();
+
+const destination = ref({});
 const user = ref(null);
 const snackbar = ref({
   value: false,
@@ -13,116 +13,77 @@ const snackbar = ref({
   text: "",
 });
 
-const newDestination = ref({
-  name: "",
-  description: "",
-  rating: 0,
-});
-
 onMounted(async () => {
-  fetchDestinations();
+  fetchDestination();
   user.value = JSON.parse(localStorage.getItem("user"));
 });
 
-async function fetchDestinations() {
-  // Use the destination service to fetch all destinations
+async function fetchDestination() {
+  // Use the destination service to fetch the destination
+  console.log(route.params.id);
   await destinationService
-    .getAllDestinations()
+    .getDestinationById(route.params.id)
     .then((response) => {
-      destinations.value = response.data;
+      destination.value = response.data[0];
+      console.log("destination ++++>" + destination.value);
     })
     .catch((error) => {
-      console.error("Error in fetching destinations:", error);
+      console.error("Error in fetching destination:", error);
     });
 }
-
-async function addDestination() {
-  isAdd.value = false;
-  // newDestination.value.userId = user.value.id;
-  await destinationService
-    .createDestination(newDestination.value)
-    .then(() => {
-      snackbar.value.value = true;
-      snackbar.value.color = "green";
-      snackbar.value.text = `${newDestination.value.name} added successfully!`;
-    })
-    .catch((error) => {
-      console.log(error);
-      snackbar.value.value = true;
-      snackbar.value.color = "error";
-      snackbar.value.text = error;
-    });
-  await fetchDestinations();
-}
-
-function openAdd() {
-  isAdd.value = true;
-}
-function closeAdd() {
-  isAdd.value = false;
-}
-function closeSnackBar() {
-  snackbar.value.value = false;
+function navigateToDestinations() {
+  route.push({ name: "destinations" });
 }
 </script>
 
 <template>
-  <v-container>
-    <div id="body">
-      <v-row align="center" class="mb-4">
-        <v-col cols="10"
-          ><v-card-title class="pl-0 text-h4">Destinations </v-card-title>
-        </v-col>
-        <v-col class="d-flex justify-end" cols="2">
-          <v-btn v-if="user !== null" color="accent" @click="openAdd()">
-            Add</v-btn
-          >
-        </v-col>
-      </v-row>
-    </div>
-  </v-container>
-  <div>
-    <DestinationList :destinations="destinations" />
-  </div>
+  <v-app id="inspire">
+    <v-main class="bg-grey-lighten-3">
+      <v-container>
+        <v-row>
+          <v-col cols="12" sm="4">
+            <v-card class="mx-auto" max-width="344">
+              <v-img
+                src="https://cdn.vuetifyjs.com/images/cards/sunshine.jpg"
+                height="200px"
+                cover
+              ></v-img>
 
-  <v-dialog persistent v-model="isAdd" width="800">
-    <v-card class="rounded-lg elevation-5">
-      <v-card-title class="headline mb-2">Add Destination </v-card-title>
-      <v-card-text>
-        <v-text-field
-          v-model="newDestination.name"
-          label="Name"
-          required
-        ></v-text-field>
+              <v-card-title v-model="destination.name" >Top western road trips</v-card-title>
 
-        <v-text-field
-          v-model.number="newDestination.description"
-          label="Description"
-        ></v-text-field>
-        <v-text-field
-          v-model.number="newDestination.rating"
-          label="Rating"
-          type="number"
-        ></v-text-field>
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn variant="flat" color="secondary" @click="closeAdd()"
-          >Close</v-btn
-        >
-        <v-btn variant="flat" color="primary" @click="addDestination()"
-          >Add Destination</v-btn
-        >
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
-  <v-snackbar v-model="snackbar.value" rounded="pill">
-    {{ snackbar.text }}
+              <v-card-subtitle v-model="destination.rating"> 1,000 miles of wonder </v-card-subtitle>
 
-    <template v-slot:actions>
-      <v-btn :color="snackbar.color" variant="text" @click="closeSnackBar()">
-        Close
-      </v-btn>
-    </template>
-  </v-snackbar>
+              <v-card-actions>
+                <v-btn color="orange-lighten-2" variant="text"> Explore </v-btn>
+
+                <v-spacer></v-spacer>
+
+                <v-btn
+                  :icon="show ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                  @click="show = !show"
+                ></v-btn>
+              </v-card-actions>
+
+              <v-expand-transition>
+                <div v-show="show">
+                  <v-divider></v-divider>
+
+                  <v-card-text
+                  v-model="destination.description"
+                  >
+                  </v-card-text>
+                </div>
+              </v-expand-transition>
+            </v-card>
+          </v-col>
+
+          <v-col cols="12" sm="8">
+            <v-sheet min-height="70vh" rounded="lg">
+              <!--  -->
+            </v-sheet>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-main>
+  </v-app>
 </template>

@@ -7,14 +7,8 @@ const getAllDestinations = async () => {
 
 // Get a destination by ID
 const getDestinationById = async (id) => {
-  try {
-    const response = await axios.get(`${BASE_URL}/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error in getting destination with ID ${id}:`, error);
-    throw error;
-  }
-};
+  return apiClient.get("destinations", id);
+}
 
 // Create a new destination
 const createDestination = async (destination) => {
