@@ -2,29 +2,17 @@ import apiClient from "./services";
 
 // Get all destinations
 const getAllDestinations = async () => {
-  return apiClient.get("/destinations")
+   return apiClient.get("destinations");
 };
 
 // Get a destination by ID
 const getDestinationById = async (id) => {
-  try {
-    const response = await axios.get(`${BASE_URL}/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error in getting destination with ID ${id}:`, error);
-    throw error;
-  }
-};
+  return apiClient.get("destinations/"+ id);
+}
 
 // Create a new destination
 const createDestination = async (destination) => {
-  try {
-    const response = await axios.post(BASE_URL, destination);
-    return response.data;
-  } catch (error) {
-    console.error('Error in creating destination:', error);
-    throw error;
-  }
+  return apiClient.post("destinations", destination);
 };
 
 // Update a destination by ID
