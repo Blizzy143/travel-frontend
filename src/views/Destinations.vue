@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted } from "vue";
 import { ref } from "vue";
-import DestinationList from "../components/DestinationList.vue";
+import RecipeCard from "../components/DestinationCard.vue";
 import destinationService from "../services/DestinationService.js";
 
 const destinations = ref([]);
@@ -64,6 +64,7 @@ function closeAdd() {
 function closeSnackBar() {
   snackbar.value.value = false;
 }
+
 </script>
 
 <template>
@@ -71,21 +72,25 @@ function closeSnackBar() {
     <div id="body">
       <v-row align="center" class="mb-4">
         <v-col cols="10"
-          ><v-card-title class="pl-0 text-h4">Destinations </v-card-title>
+          ><v-card-title class="pl-0 text-h4 font-weight-bold"
+            >Destinations
+          </v-card-title>
         </v-col>
         <v-col class="d-flex justify-end" cols="2">
-          <v-btn v-if="user !== null" color="accent" @click="openAdd()">
-            Add</v-btn
+          <v-btn v-if="user !== null" color="accent" @click="openAdd()"
+            >Add</v-btn
           >
         </v-col>
       </v-row>
-    </div>
-  </v-container>
-  <div>
-    <DestinationList :destinations="destinations" />
-  </div>
 
-  <v-dialog persistent v-model="isAdd" width="800">
+      <RecipeCard
+        v-for="destination in destinations"
+        :key="destination.destination_id"
+        :destination="destination"
+        
+      />
+
+      <v-dialog persistent v-model="isAdd" width="800">
     <v-card class="rounded-lg elevation-5">
       <v-card-title class="headline mb-2">Add Destination </v-card-title>
       <v-card-text>
@@ -125,4 +130,9 @@ function closeSnackBar() {
       </v-btn>
     </template>
   </v-snackbar>
+
+
+      
+    </div>
+  </v-container>
 </template>

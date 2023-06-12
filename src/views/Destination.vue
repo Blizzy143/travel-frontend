@@ -1,11 +1,15 @@
 <script setup>
 import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import destinationService from "../services/DestinationService.js";
+import tripsService from "../services/TripsService.js";
 
-const route = useRouter();
+const route = useRoute();
 
 const destination = ref({});
+const trips = ref([]);
+const isAdd = ref(false);
+const isEdit = ref(false);
 const user = ref(null);
 const snackbar = ref({
   value: false,
@@ -13,26 +17,101 @@ const snackbar = ref({
   text: "",
 });
 
+const newTrip = ref({
+  name: "",
+  destinationId: "",
+  userId: "",
+  startDate: "",
+  endDate: "",
+});
+
 onMounted(async () => {
-  fetchDestination();
   user.value = JSON.parse(localStorage.getItem("user"));
+  fetchDestination();
 });
 
 async function fetchDestination() {
   // Use the destination service to fetch the destination
-  console.log(route.params.id);
   await destinationService
     .getDestinationById(route.params.id)
     .then((response) => {
-      destination.value = response.data[0];
-      console.log("destination ++++>" + destination.value);
+      destination.value = response.data;
+      fetchTrips(user.id, destination.id);
     })
     .catch((error) => {
       console.error("Error in fetching destination:", error);
     });
 }
+
+async function fetchTrips(userId, destinationId) {
+  await tripsService
+    .getTripsByDestinationId(destinationId)
+    .then((response) => {
+      trips.value = response.data;
+    })
+    .catch((error) => {
+      console.error("Error in fetching trips for destination");
+    });
+}
+
+async function addTrip() {
+  isAdd.value = false;
+  delete newTrip.trip_id;
+  await tripsService
+    .createTrip(newTrip.value)
+    .then(() => {
+      snackbar.value.value = true;
+      snackbar.value.color = "green";
+      snackbar.value.text = `trip to ${destination.value.name} added successfully!`;
+    })
+    .catch((error) => {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    });
+  await fetchTrips();
+}
+
+async function updateTrip() {
+  isEdit.value = false;
+  await IngredientServices.updateIngredient(newTrip.value)
+    .then(() => {
+      snackbar.value.value = true;
+      snackbar.value.color = "green";
+      snackbar.value.text = `${newTrip.name} updated successfully!`;
+    })
+    .catch((error) => {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    });
+  await getIngredients();
+}
+
+function openAdd() {
+  newTrip.value.name = undefined;
+  newTrip.value.destinationId = destination.value.destination_id;
+  newTrip.value.userId = user.value.id;
+  newTrip.value.startDate = undefined;
+  newTrip.value.endDate = undefined;
+  isAdd.value = true;
+}
+
+function closeAdd() {
+  isAdd.value = false;
+}
+
+function closeSnackBar() {
+  snackbar.value.value = false;
+}
 function navigateToDestinations() {
   route.push({ name: "destinations" });
+}
+function formatDate(date) {
+  const options = { year: "numeric", month: "long", day: "numeric" };
+  return new Date(date).toLocaleDateString(undefined, options);
 }
 </script>
 
@@ -42,46 +121,146 @@ function navigateToDestinations() {
       <v-container>
         <v-row>
           <v-col cols="12" sm="4">
-            <v-card class="mx-auto" max-width="344">
+            <v-card class="mx-auto mb-12" max-width="374">
               <v-img
-                src="https://cdn.vuetifyjs.com/images/cards/sunshine.jpg"
-                height="200px"
                 cover
+                height="250"
+                src="https://cdn.vuetifyjs.com/images/cards/sunshine.jpg"
               ></v-img>
 
-              <v-card-title v-model="destination.name" >Top western road trips</v-card-title>
+              <v-card-item>
+                <v-card-title>{{ destination.name }}</v-card-title>
 
-              <v-card-subtitle v-model="destination.rating"> 1,000 miles of wonder </v-card-subtitle>
+                <v-card-subtitle>
+                  <span class="me-1">Rating : {{ destination.rating }}</span>
 
-              <v-card-actions>
-                <v-btn color="orange-lighten-2" variant="text"> Explore </v-btn>
+                  <v-icon
+                    color="green"
+                    icon="mdi-fire-circle"
+                    size="small"
+                  ></v-icon>
+                </v-card-subtitle>
+              </v-card-item>
 
-                <v-spacer></v-spacer>
+              <v-card-text>
+                <v-row align="center" class="mx-0">
+                  <v-rating
+                    :model-value="destination.rating"
+                    color="amber"
+                    density="compact"
+                    half-increments
+                    readonly
+                    size="small"
+                  ></v-rating>
 
-                <v-btn
-                  :icon="show ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-                  @click="show = !show"
-                ></v-btn>
-              </v-card-actions>
+                  <div class="text-grey ms-4">
+                    {{ destination.rating }}
+                  </div>
+                </v-row>
+                <div class="my-4">{{ destination.description }}</div>
+              </v-card-text>
 
-              <v-expand-transition>
-                <div v-show="show">
-                  <v-divider></v-divider>
-
-                  <v-card-text
-                  v-model="destination.description"
-                  >
-                  </v-card-text>
-                </div>
-              </v-expand-transition>
+              <v-divider class="mx-4 mb-1"></v-divider>
             </v-card>
           </v-col>
 
           <v-col cols="12" sm="8">
-            <v-sheet min-height="70vh" rounded="lg">
-              <!--  -->
-            </v-sheet>
+            <v-row align="center" class="mb-4">
+              <v-col cols="10"
+                ><v-card-title class="pl-0 text-h4"
+                  >My trips to {{ destination.name }}
+                </v-card-title>
+              </v-col>
+              <v-col class="d-flex justify-end" cols="2">
+                <v-btn v-if="user !== null" color="accent" @click="openAdd()"
+                  >Add</v-btn
+                >
+              </v-col>
+            </v-row>
+
+            <v-table class="rounded-lg elevation-5">
+              <thead>
+                <tr>
+                  <th class="text-left">Trip Description</th>
+                  <th class="text-left">Start date</th>
+                  <th class="text-left">End date</th>
+                  <th class="text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="trip in trips" :key="trip.name">
+                  <td>{{ trip.name }}</td>
+                  <td>{{ formatDate(trip.start_date) }}</td>
+                  <td>{{ formatDate(trip.end_date) }}</td>
+                  <td>
+                    <v-icon
+                      size="small"
+                      icon="mdi-pencil"
+                      @click="openEdit(item)"
+                    ></v-icon>
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
           </v-col>
+
+          <v-dialog persistent :model-value="isAdd || isEdit" width="800">
+            <v-card class="rounded-lg elevation-5">
+              <v-card-item>
+                <v-card-title class="headline mb-2"
+                  >{{ isAdd ? "Add Trip" : isEdit ? "Edit trip" : "" }}
+                </v-card-title>
+              </v-card-item>
+              <v-card-text>
+                <v-text-field
+                  v-model="newTrip.name"
+                  label="Name"
+                  required
+                ></v-text-field>
+
+                <v-text-field
+                  v-model="newTrip.start_date"
+                  label="Price Per Unit"
+                  type="date"
+                ></v-text-field>
+                <v-text-field
+                  v-model="newTrip.end_date"
+                  label="Price Per Unit"
+                  type="date"
+                ></v-text-field>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                  variant="flat"
+                  color="secondary"
+                  @click="isAdd ? closeAdd() : isEdit ? closeEdit() : false"
+                  >Close</v-btn
+                >
+                <v-btn
+                  variant="flat"
+                  color="primary"
+                  @click="isAdd ? addTrip() : isEdit ? updateTrip() : false"
+                  >{{
+                    isAdd ? "Add Trip " : isEdit ? "Update Trip" : ""
+                  }}</v-btn
+                >
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+          <v-snackbar v-model="snackbar.value" rounded="pill">
+            {{ snackbar.text }}
+
+            <template v-slot:actions>
+              <v-btn
+                :color="snackbar.color"
+                variant="text"
+                @click="closeSnackBar()"
+              >
+                Close
+              </v-btn>
+            </template>
+          </v-snackbar>
         </v-row>
       </v-container>
     </v-main>

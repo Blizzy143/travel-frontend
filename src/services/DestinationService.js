@@ -7,7 +7,7 @@ const getAllDestinations = async () => {
 
 // Get a destination by ID
 const getDestinationById = async (id) => {
-  return apiClient.get("destinations", id);
+  return apiClient.get("destinations/"+ id);
 }
 
 // Create a new destination

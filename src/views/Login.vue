@@ -16,6 +16,7 @@ const user = ref({
   lastName: "",
   email: "",
   password: "",
+  id: ""
 });
 
 onMounted(async () => {
@@ -51,7 +52,7 @@ async function login() {
       snackbar.value.value = true;
       snackbar.value.color = "green";
       snackbar.value.text = data;
-      
+      console.log(data);
       window.localStorage.setItem("user", JSON.stringify(data.data));
       snackbar.value.value = true;
       snackbar.value.color = "green";
