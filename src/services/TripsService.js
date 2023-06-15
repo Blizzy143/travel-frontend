@@ -35,6 +35,10 @@ const deleteTrip = async (tripId) => {
   }
 };
 
+const addItenary = async (data) => {
+  return apiClient.post('/iteneraries', data);
+};
+
 export default {
   createTrip,
   getTrips,
@@ -42,4 +46,5 @@ export default {
   getTripById,
   updateTrip,
   deleteTrip,
+  addItenary
 };
