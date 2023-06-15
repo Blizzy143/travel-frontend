@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import destinationService from "../services/DestinationService.js";
 import PlaceService from "../services/PlaceService.js";
+import HotelService from "../services/HotelService.js";
 
 
 const route = useRoute();
@@ -10,6 +11,10 @@ const route = useRoute();
 const destination = ref({});
 const isAdd = ref(false);
 const isEdit = ref(false);
+
+const isAddHotel = ref(false);
+const isEditHotel = ref(false);
+
 const user = ref(null);
 const snackbar = ref({
   value: false,
@@ -24,6 +29,12 @@ const place = ref({
   destination_id: route.params.id,
 });
 
+const hotel = ref({
+  name: "",
+  address: "",
+  website: "",
+  destination_id: route.params.id,
+});
 
 onMounted(async () => {
   user.value = JSON.parse(localStorage.getItem("user"));
@@ -49,19 +60,16 @@ async function addPlace() {
     .then((response) => {
       fetchDestination();
       closeAdd();
-      snackbar.value = {
-        value: true,
-        color: "success",
-        text: "Place added successfully",
-      };
+      snackbar.value.color = "success";
+      snackbar.value.text = "Place added successfully";
+      snackbar.value.value = true;
+
     })
     .catch((error) => {
       console.error("Error in adding place:", error);
-      snackbar.value = {
-        value: true,
-        color: "error",
-        text: "Error in adding place",
-      };
+      snackbar.value.color = "error";
+      snackbar.value.text = "Error in adding place";
+      snackbar.value.value = true;
     });
 }
 
@@ -115,7 +123,6 @@ function openAdd() {
   };
 }
 
-
 function openEdit(temp) {
   isEdit.value = true;
   place.value = temp;
@@ -128,6 +135,91 @@ function closeAdd() {
 function closeEdit() {
   isEdit.value = false;
 }
+
+function openAddHotel() {
+  isAddHotel.value = true;
+  hotel.value = {
+    name: "",
+    address: "",
+    website: "",
+    destination_id: route.params.id,
+  };
+}
+
+function openEditHotel(temp) {
+  isEditHotel.value = true;
+  hotel.value = temp;
+}
+
+function closeAddHotel() {
+  isAddHotel.value = false;
+}
+
+function closeEditHotel() {
+  isEditHotel.value = false;
+}
+
+async function addHotel(){
+  // Use the hotel service to add a hotel
+  await HotelService.createHotel(hotel.value)
+    .then((response) => {
+      fetchDestination();
+      closeAddHotel();
+      snackbar.value.color = "success";
+      snackbar.value.text = "Hotel added successfully";
+      snackbar.value.value = true;
+
+    })
+    .catch((error) => {
+      console.error("Error in adding hotel:", error);
+      snackbar.value.color = "error";
+      snackbar.value.text = "Error in adding hotel";
+      snackbar.value.value = true;
+    });
+}
+
+async function updateHotel(){
+  // Use the hotel service to update a hotel
+  await HotelService.updateHotel(hotel.value)
+    .then((response) => {
+      fetchDestination();
+      closeEditHotel();
+      snackbar.value.color = "success";
+      snackbar.value.text = "Hotel updated successfully";
+      snackbar.value.value = true;
+
+    })
+    .catch((error) => {
+      console.error("Error in updating hotel:", error);
+      snackbar.value.color = "error";
+      snackbar.value.text = "Error in updating hotel";
+      snackbar.value.value = true;
+
+    });
+}
+
+async function deleteHotel(selectedHotel){
+  // Use the hotel service to delete a hotel
+  await HotelService.deleteHotel(selectedHotel.id)
+    .then((response) => {
+      fetchDestination();
+      closeEditHotel();
+      snackbar.value.color = "success";
+      snackbar.value.text = "Hotel deleted successfully";
+      snackbar.value.value = true;
+
+    })
+    .catch((error) => {
+      console.error("Error in deleting hotel:", error);
+      snackbar.value.color = "error";
+      snackbar.value.text = "Error in deleting hotel";
+      snackbar.value.value = true;
+
+    });
+}
+
+
+
 function closeSnackBar() {
   snackbar.value.value = false;
 }
@@ -231,6 +323,57 @@ function closeSnackBar() {
               </tbody>
             </v-table>
           </v-col>
+          
+          <v-col cols="12" sm="4">
+          </v-col>
+          <v-col cols="12" sm="8">
+            <v-row align="center" class="mb-4">
+              <v-col cols="10"
+                ><v-card-title class="pl-0 text-h4"
+                  >Hotels to stay in {{ destination.name }}
+                </v-card-title>
+              </v-col>
+              <v-col class="d-flex justify-end" cols="2">
+                <v-btn v-if="user !== null" color="accent" @click="openAddHotel()"
+                  >Add</v-btn
+                >
+              </v-col>
+            </v-row>
+
+            <v-table class="rounded-lg elevation-5">
+              <thead>
+                <tr>
+                  <th class="text-left">Hotel name</th>
+                  <th class="text-left">Address</th>
+                  <th class="text-left">Website</th>
+                  <th class="text-left">Edit</th>
+                  <th class="text-left">Delete</th>
+                  
+                </tr>
+              </thead>
+              <tbody >
+                <tr v-for="hotel in destination.Hotels" :key="hotel.name">
+                  <td>{{ hotel.name }}</td>
+                  <td>{{ hotel.address }}</td>
+                  <td>{{ hotel.website }}</td>
+                  <td>
+                    <v-icon
+                      size="small"
+                      icon="mdi-pencil"
+                      @click="openEditHotel(hotel)"
+                    ></v-icon>
+                  </td>
+                  <td>
+                    <v-icon
+                      size="small"
+                      icon="mdi-delete"
+                      @click="deleteHotel(hotel)"
+                    ></v-icon>
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
+          </v-col>
 
           <v-dialog persistent :model-value="isAdd || isEdit" width="800">
             <v-card class="rounded-lg elevation-5">
@@ -268,6 +411,49 @@ function closeSnackBar() {
                   @click="isAdd ? addPlace() : isEdit ? updatePlace() : false"
                   >{{
                     isAdd ? "Add place " : isEdit ? "Update place" : ""
+                  }}</v-btn
+                >
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+
+
+          <v-dialog persistent :model-value="isAddHotel || isEditHotel" width="800">
+            <v-card class="rounded-lg elevation-5">
+              <v-card-item>
+                <v-card-title class="headline mb-2"
+                  >{{ isAddHotel ? "Add hotel" : isEditHotel ? "Edit hotel" : "" }}
+                </v-card-title>
+              </v-card-item>
+              <v-card-text>
+                <v-text-field
+                  v-model="hotel.name"
+                  label="Name"
+                  required
+                ></v-text-field>
+                <v-text-field
+                  v-model="hotel.address"
+                  label="Address"
+                ></v-text-field>
+                                <v-text-field
+                  v-model="hotel.website"
+                  label="Website"
+                ></v-text-field>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                  variant="flat"
+                  color="secondary"
+                  @click="isAddHotel ? closeAddHotel() : isEditHotel ? closeEditHotel() : false"
+                  >Close</v-btn
+                >
+                <v-btn
+                  variant="flat"
+                  color="primary"
+                  @click="isAddHotel ? addHotel() : isEditHotel ? updateHotel() : false"
+                  >{{
+                    isAddHotel ? "Add hotel " : isEditHotel ? "Update hotel" : ""
                   }}</v-btn
                 >
               </v-card-actions>
