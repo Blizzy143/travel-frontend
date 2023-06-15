@@ -30,7 +30,7 @@ function navigateToDestination() {
     <v-img
       class="align-end text-white"
       height="300"
-      src="https://cdn.vuetifyjs.com/images/cards/docks.jpg"
+      v-bind:src="destination.image"
       cover
     >
       <v-card-title>{{ destination.name }}</v-card-title>
