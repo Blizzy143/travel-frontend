@@ -1,12 +1,14 @@
 <script setup>
 import { onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import destinationService from "../services/DestinationService.js";
 import PlaceService from "../services/PlaceService.js";
 import HotelService from "../services/HotelService.js";
 import tripsService from "../services/TripsService.js";
 
 const route = useRoute();
+
+const router = useRouter();
 
 const destination = ref({});
 const trips = ref([]);
@@ -101,7 +103,7 @@ async function updateTrip() {
 }
 
 
-async function deleteTrip(temp){
+async function deleteTrip(temp) {
   await tripsService.deleteTrip(temp.trip_id)
     .then(() => {
       snackbar.value.value = true;
@@ -126,7 +128,7 @@ function openAdd() {
   isAdd.value = true;
 }
 
-function openEdit(temp){
+function openEdit(temp) {
   console.log("temp", temp);
   isEdit.value = true;
   newTrip.value = temp;
@@ -145,10 +147,8 @@ function formatDate(date) {
   return new Date(date).toLocaleDateString(undefined, options);
 }
 
-async function showUpcoming(){
-  snackbar.value.value = true;
-      snackbar.value.color = "green";
-      snackbar.value.text = "Upcoming feature!";
+async function showDetails(plan) {
+  router.push({ name: "plan-details", params: { planId: plan.trip_id, id: destination.value.destination_id } });
 }
 
 
@@ -165,11 +165,7 @@ function closeSnackBar() {
         <v-row>
           <v-col cols="12" sm="4">
             <v-card class="mx-auto mb-12" max-width="374">
-              <v-img
-                cover
-                height="250"
-                v-bind:src="destination.image"
-              ></v-img>
+              <v-img cover height="250" v-bind:src="destination.image"></v-img>
 
               <v-card-item>
                 <v-card-title>{{ destination.name }}</v-card-title>
@@ -177,24 +173,14 @@ function closeSnackBar() {
                 <v-card-subtitle>
                   <span class="me-1">Rating : {{ destination.rating }}</span>
 
-                  <v-icon
-                    color="green"
-                    icon="mdi-fire-circle"
-                    size="small"
-                  ></v-icon>
+                  <v-icon color="green" icon="mdi-fire-circle" size="small"></v-icon>
                 </v-card-subtitle>
               </v-card-item>
 
               <v-card-text>
                 <v-row align="center" class="mx-0">
-                  <v-rating
-                    :model-value="destination.rating"
-                    color="amber"
-                    density="compact"
-                    half-increments
-                    readonly
-                    size="small"
-                  ></v-rating>
+                  <v-rating :model-value="destination.rating" color="amber" density="compact" half-increments readonly
+                    size="small"></v-rating>
 
                   <div class="text-grey ms-4">
                     {{ destination.rating }}
@@ -210,15 +196,11 @@ function closeSnackBar() {
 
           <v-col cols="12" sm="8">
             <v-row align="center" class="mb-4">
-              <v-col cols="10"
-                ><v-card-title class="pl-0 text-h4"
-                  >My trips to {{ destination.name }}
+              <v-col cols="10"><v-card-title class="pl-0 text-h4">My trips to {{ destination.name }}
                 </v-card-title>
               </v-col>
               <v-col class="d-flex justify-end" cols="2">
-                <v-btn v-if="user !== null" color="accent" @click="openAdd()"
-                  >Add</v-btn
-                >
+                <v-btn v-if="user !== null" color="accent" @click="openAdd()">Add</v-btn>
               </v-col>
             </v-row>
 
@@ -240,22 +222,13 @@ function closeSnackBar() {
                   <td>{{ formatDate(trip.start_date) }}</td>
                   <td>{{ formatDate(trip.end_date) }}</td>
                   <td>
-                    <v-icon
-                      size="small"
-                      icon="mdi-pencil"
-                      @click="openEdit(trip)"
-                    ></v-icon>
+                    <v-icon size="small" icon="mdi-pencil" @click="openEdit(trip)"></v-icon>
                   </td>
                   <td>
-                    <v-icon
-                      size="small"
-                      icon="mdi-delete"
-                      @click="deleteTrip(trip)"
-                    ></v-icon>
+                    <v-icon size="small" icon="mdi-delete" @click="deleteTrip(trip)"></v-icon>
                   </td>
                   <td>
-                    <v-chip @click="showUpcoming()" label append-icon="mdi-plus" color="green">
-Plan it
+                    <v-chip @click="showDetails(trip)" label append-icon="mdi-airplane" color="green">View Plan
                     </v-chip>
                   </td>
                 </tr>
@@ -266,57 +239,31 @@ Plan it
           <v-dialog persistent :model-value="isAdd || isEdit" width="800">
             <v-card class="rounded-lg elevation-5">
               <v-card-item>
-                <v-card-title class="headline mb-2"
-                  >{{ isAdd ? "Add Trip" : isEdit ? "Edit trip" : "" }}
+                <v-card-title class="headline mb-2">{{ isAdd ? "Add Trip" : isEdit ? "Edit trip" : "" }}
                 </v-card-title>
               </v-card-item>
               <v-card-text>
-                <v-text-field
-                  v-model="newTrip.name"
-                  label="Name"
-                  required
-                ></v-text-field>
+                <v-text-field v-model="newTrip.name" label="Name" required></v-text-field>
 
-                <v-text-field
-                  v-model="newTrip.start_date"
-                  label="Start date"
-                  type="date"
-                ></v-text-field>
-                <v-text-field
-                  v-model="newTrip.end_date"
-                  label="End date"
-                  type="date"
-                ></v-text-field>
+                <v-text-field v-model="newTrip.start_date" label="Start date" type="date"></v-text-field>
+                <v-text-field v-model="newTrip.end_date" label="End date" type="date"></v-text-field>
               </v-card-text>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn
-                  variant="flat"
-                  color="secondary"
-                  @click="isAdd ? closeAdd() : isEdit ? closeEdit() : false"
-                  >Close</v-btn
-                >
-                <v-btn
-                  variant="flat"
-                  color="primary"
-                  @click="isAdd ? addTrip() : isEdit ? updateTrip() : false"
-                  >{{
-                    isAdd ? "Add Trip " : isEdit ? "Update Trip" : ""
-                  }}</v-btn
-                >
+                <v-btn variant="flat" color="secondary"
+                  @click="isAdd ? closeAdd() : isEdit ? closeEdit() : false">Close</v-btn>
+                <v-btn variant="flat" color="primary" @click="isAdd ? addTrip() : isEdit ? updateTrip() : false">{{
+                  isAdd ? "Add Trip " : isEdit ? "Update Trip" : ""
+                }}</v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
-        
+
           <v-snackbar v-model="snackbar.value" rounded="pill">
             {{ snackbar.text }}
 
             <template v-slot:actions>
-              <v-btn
-                :color="snackbar.color"
-                variant="text"
-                @click="closeSnackBar()"
-              >
+              <v-btn :color="snackbar.color" variant="text" @click="closeSnackBar()">
                 Close
               </v-btn>
             </template>
