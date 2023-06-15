@@ -21,7 +21,15 @@ const user = ref({
 
 onMounted(async () => {
   if (localStorage.getItem("user") !== null) {
-    router.push({ name: "destinations" });
+    savedUser.value = JSON.parse(localStorage.getItem("user"))
+    if (savedUser.value.user_type === "admin") {
+      router.push({ name: "admin" });
+    } else {
+      router.push({ name: "user" });
+    }
+  }
+  else {
+    router.push({ name: "login" });
   }
 });
 
@@ -46,7 +54,14 @@ async function createAccount() {
 }
 
 async function login() {
-  console.log(user.value);
+  // add validation
+  if (user.value.email === "" || user.value.password === "") {
+    snackbar.value.value = true;
+    snackbar.value.color = "red";
+    snackbar.value.text = "Please enter email and password";
+    return;
+  }
+
   await UserServices.loginUser(user)
     .then((data) => {
       snackbar.value.value = true;
@@ -86,36 +101,20 @@ function closeSnackBar() {
       <v-card class="rounded-lg elevation-5">
         <v-card-title class="headline mb-2">Login </v-card-title>
         <v-card-text>
-          <v-text-field
-            v-model="user.email"
-            label="Email"
-            required
-          ></v-text-field>
+          <v-text-field v-model="user.email" label="Email" required></v-text-field>
 
-          <v-text-field
-            v-model="user.password"
-            label="Password"
-            required
-          ></v-text-field>
+          <v-text-field v-model="user.password" label="Password" required></v-text-field>
         </v-card-text>
         <v-card-actions>
-          <v-btn variant="flat" color="secondary" @click="openCreateAccount()"
-            >Create Account</v-btn
-          >
+          <v-btn variant="flat" color="secondary" @click="openCreateAccount()">Create Account</v-btn>
           <v-spacer></v-spacer>
-
           <v-btn variant="flat" color="primary" @click="login()">Login</v-btn>
         </v-card-actions>
       </v-card>
 
-      <v-card class="rounded-lg elevation-5 my-8">
+      <v-card hidden class="rounded-lg elevation-5 my-8">
         <v-card-title class="text-center headline">
-          <v-btn
-            class="ml-2"
-            variant="flat"
-            color="secondary"
-            @click="navigateToDestinations()"
-          >
+          <v-btn class="ml-2" variant="flat" color="secondary" @click="navigateToDestinations()">
             View Popular Iternaries
           </v-btn>
         </v-card-title>
@@ -125,41 +124,18 @@ function closeSnackBar() {
         <v-card class="rounded-lg elevation-5">
           <v-card-title class="headline mb-2">Create Account </v-card-title>
           <v-card-text>
-            <v-text-field
-              v-model="user.firstName"
-              label="First Name"
-              required
-            ></v-text-field>
+            <v-text-field v-model="user.firstName" label="First Name" required></v-text-field>
 
-            <v-text-field
-              v-model="user.lastName"
-              label="Last Name"
-              required
-            ></v-text-field>
+            <v-text-field v-model="user.lastName" label="Last Name" required></v-text-field>
 
-            <v-text-field
-              v-model="user.email"
-              label="Email"
-              required
-            ></v-text-field>
+            <v-text-field v-model="user.email" label="Email" required></v-text-field>
 
-            <v-text-field
-              v-model="user.password"
-              label="Password"
-              required
-            ></v-text-field>
+            <v-text-field v-model="user.password" label="Password" required></v-text-field>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn
-              variant="flat"
-              color="secondary"
-              @click="closeCreateAccount()"
-              >Close</v-btn
-            >
-            <v-btn variant="flat" color="primary" @click="createAccount()"
-              >Create Account</v-btn
-            >
+            <v-btn variant="flat" color="secondary" @click="closeCreateAccount()">Close</v-btn>
+            <v-btn variant="flat" color="primary" @click="createAccount()">Create Account</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -168,11 +144,7 @@ function closeSnackBar() {
         {{ snackbar.text }}
 
         <template v-slot:actions>
-          <v-btn
-            :color="snackbar.color"
-            variant="text"
-            @click="closeSnackBar()"
-          >
+          <v-btn :color="snackbar.color" variant="text" @click="closeSnackBar()">
             Close
           </v-btn>
         </template>
