@@ -2,12 +2,12 @@
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import destinationService from "../services/DestinationService.js";
-import tripsService from "../services/TripsService.js";
+import PlaceService from "../services/PlaceService.js";
+
 
 const route = useRoute();
 
 const destination = ref({});
-const trips = ref([]);
 const isAdd = ref(false);
 const isEdit = ref(false);
 const user = ref(null);
@@ -17,18 +17,19 @@ const snackbar = ref({
   text: "",
 });
 
-const newTrip = ref({
+const place = ref({
   name: "",
-  destinationId: "",
-  userId: "",
-  startDate: "",
-  endDate: "",
+  address: "",
+  description: "",
+  destination_id: route.params.id,
 });
+
 
 onMounted(async () => {
   user.value = JSON.parse(localStorage.getItem("user"));
   fetchDestination();
 });
+
 
 async function fetchDestination() {
   // Use the destination service to fetch the destination
@@ -36,83 +37,101 @@ async function fetchDestination() {
     .getDestinationById(route.params.id)
     .then((response) => {
       destination.value = response.data;
-      fetchTrips(user.id, destination.id);
     })
     .catch((error) => {
       console.error("Error in fetching destination:", error);
     });
 }
 
-async function fetchTrips(userId, destinationId) {
-  await tripsService
-    .getTripsByDestinationId(destinationId)
+async function addPlace() {
+  // Use the place service to add a place
+  await PlaceService.createPlace(place.value)
     .then((response) => {
-      trips.value = response.data;
+      fetchDestination();
+      closeAdd();
+      snackbar.value = {
+        value: true,
+        color: "success",
+        text: "Place added successfully",
+      };
     })
     .catch((error) => {
-      console.error("Error in fetching trips for destination");
+      console.error("Error in adding place:", error);
+      snackbar.value = {
+        value: true,
+        color: "error",
+        text: "Error in adding place",
+      };
     });
 }
 
-async function addTrip() {
-  isAdd.value = false;
-  delete newTrip.trip_id;
-  await tripsService
-    .createTrip(newTrip.value)
-    .then(() => {
+async function updatePlace(){
+  // Use the place service to update a place
+  await PlaceService.updatePlace(place.value)
+    .then((response) => {
+      fetchDestination();
+      closeEdit();
+      snackbar.value.color = "success";
+      snackbar.value.text = "Place updated successfully";
       snackbar.value.value = true;
-      snackbar.value.color = "green";
-      snackbar.value.text = `trip to ${destination.value.name} added successfully!`;
+
     })
     .catch((error) => {
-      console.log(error);
-      snackbar.value.value = true;
+      console.error("Error in updating place:", error);
       snackbar.value.color = "error";
-      snackbar.value.text = error.response.data.message;
+      snackbar.value.text = "Error in updating place";
+      snackbar.value.value = true;
+
     });
-  await fetchTrips();
 }
 
-async function updateTrip() {
-  isEdit.value = false;
-  await IngredientServices.updateIngredient(newTrip.value)
-    .then(() => {
+async function deletePlace(selectedPlace){
+  // Use the place service to delete a place
+  await PlaceService.deletePlace(selectedPlace.id)
+    .then((response) => {
+      fetchDestination();
+      closeEdit();
+      snackbar.value.color = "success";
+      snackbar.value.text = "Place deleted successfully";
       snackbar.value.value = true;
-      snackbar.value.color = "green";
-      snackbar.value.text = `${newTrip.name} updated successfully!`;
+
     })
     .catch((error) => {
-      console.log(error);
-      snackbar.value.value = true;
+      console.error("Error in deleting place:", error);
       snackbar.value.color = "error";
-      snackbar.value.text = error.response.data.message;
+      snackbar.value.text = "Error in deleting place";
+      snackbar.value.value = true;
+
     });
-  await getIngredients();
 }
 
 function openAdd() {
-  newTrip.value.name = undefined;
-  newTrip.value.destinationId = destination.value.destination_id;
-  newTrip.value.userId = user.value.id;
-  newTrip.value.startDate = undefined;
-  newTrip.value.endDate = undefined;
   isAdd.value = true;
+  place.value = {
+    name: "",
+    address: "",
+    description: "",
+    destination_id: route.params.id,
+  };
+}
+
+
+function openEdit(temp) {
+  isEdit.value = true;
+  place.value = temp;
 }
 
 function closeAdd() {
   isAdd.value = false;
 }
 
+function closeEdit() {
+  isEdit.value = false;
+}
 function closeSnackBar() {
   snackbar.value.value = false;
 }
-function navigateToDestinations() {
-  route.push({ name: "destinations" });
-}
-function formatDate(date) {
-  const options = { year: "numeric", month: "long", day: "numeric" };
-  return new Date(date).toLocaleDateString(undefined, options);
-}
+
 </script>
 
 <template>
@@ -125,7 +144,7 @@ function formatDate(date) {
               <v-img
                 cover
                 height="250"
-                src="https://cdn.vuetifyjs.com/images/cards/sunshine.jpg"
+                v-bind:src="destination.image"
               ></v-img>
 
               <v-card-item>
@@ -168,7 +187,7 @@ function formatDate(date) {
             <v-row align="center" class="mb-4">
               <v-col cols="10"
                 ><v-card-title class="pl-0 text-h4"
-                  >My trips to {{ destination.name }}
+                  >Places to visit in {{ destination.name }}
                 </v-card-title>
               </v-col>
               <v-col class="d-flex justify-end" cols="2">
@@ -181,22 +200,31 @@ function formatDate(date) {
             <v-table class="rounded-lg elevation-5">
               <thead>
                 <tr>
-                  <th class="text-left">Trip Description</th>
-                  <th class="text-left">Start date</th>
-                  <th class="text-left">End date</th>
-                  <th class="text-left">Actions</th>
+                  <th class="text-left">Place name</th>
+                  <th class="text-left">description </th>
+                  <th class="text-left">Address</th>
+                  <th class="text-left">Edit</th>
+                  <th class="text-left">Delete</th>
+                  
                 </tr>
               </thead>
-              <tbody>
-                <tr v-for="trip in trips" :key="trip.name">
-                  <td>{{ trip.name }}</td>
-                  <td>{{ formatDate(trip.start_date) }}</td>
-                  <td>{{ formatDate(trip.end_date) }}</td>
+              <tbody >
+                <tr v-for="place in destination.Places" :key="place.name">
+                  <td>{{ place.name }}</td>
+                  <td>{{ place.description }}</td>
+                  <td>{{ place.address }}</td>
                   <td>
                     <v-icon
                       size="small"
                       icon="mdi-pencil"
-                      @click="openEdit(item)"
+                      @click="openEdit(place)"
+                    ></v-icon>
+                  </td>
+                  <td>
+                    <v-icon
+                      size="small"
+                      icon="mdi-delete"
+                      @click="deletePlace(place)"
                     ></v-icon>
                   </td>
                 </tr>
@@ -208,25 +236,22 @@ function formatDate(date) {
             <v-card class="rounded-lg elevation-5">
               <v-card-item>
                 <v-card-title class="headline mb-2"
-                  >{{ isAdd ? "Add Trip" : isEdit ? "Edit trip" : "" }}
+                  >{{ isAdd ? "Add place" : isEdit ? "Edit place" : "" }}
                 </v-card-title>
               </v-card-item>
               <v-card-text>
                 <v-text-field
-                  v-model="newTrip.name"
+                  v-model="place.name"
                   label="Name"
                   required
                 ></v-text-field>
-
                 <v-text-field
-                  v-model="newTrip.start_date"
-                  label="Price Per Unit"
-                  type="date"
+                  v-model="place.description"
+                  label="Description"
                 ></v-text-field>
                 <v-text-field
-                  v-model="newTrip.end_date"
-                  label="Price Per Unit"
-                  type="date"
+                  v-model="place.address"
+                  label="Address"
                 ></v-text-field>
               </v-card-text>
               <v-card-actions>
@@ -240,9 +265,9 @@ function formatDate(date) {
                 <v-btn
                   variant="flat"
                   color="primary"
-                  @click="isAdd ? addTrip() : isEdit ? updateTrip() : false"
+                  @click="isAdd ? addPlace() : isEdit ? updatePlace() : false"
                   >{{
-                    isAdd ? "Add Trip " : isEdit ? "Update Trip" : ""
+                    isAdd ? "Add place " : isEdit ? "Update place" : ""
                   }}</v-btn
                 >
               </v-card-actions>

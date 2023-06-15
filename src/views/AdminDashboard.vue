@@ -116,7 +116,6 @@ function closeSnackBar() {
         </v-card>
       </v-dialog>
 
-
       <v-snackbar v-model="snackbar.value" rounded="pill">
         {{ snackbar.text }}
 
