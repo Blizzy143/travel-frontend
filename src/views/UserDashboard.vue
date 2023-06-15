@@ -6,6 +6,9 @@ import UserServices from "../services/UserServices.js";
 
 const router = useRouter();
 
+
+const savedUser = ref(null)
+
 const snackbar = ref({
   value: false,
   color: "",

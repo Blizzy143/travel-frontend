@@ -38,12 +38,22 @@ function navigateToDestinations() {
 }
 
 async function createAccount() {
+
+  // add validation
+  if (user.value.firstName === "" || user.value.lastName === "" || user.value.email === "" || user.value.password === "") {
+    snackbar.value.value = true;
+    snackbar.value.color = "red";
+    snackbar.value.text = "Please enter all fields";
+    return;
+  }
+
   await UserServices.addUser(user.value)
     .then(() => {
       snackbar.value.value = true;
       snackbar.value.color = "blue";
       snackbar.value.text = "Account created successfully!";
       router.push({ name: "login" });
+      closeCreateAccount();
     })
     .catch((error) => {
       console.log(error);
@@ -72,7 +82,11 @@ async function login() {
       snackbar.value.value = true;
       snackbar.value.color = "green";
       snackbar.value.text = "Login successful!";
-      router.push({ name: "destinations" });
+      if (data.data.user_type === "admin") {
+        router.push({ name: "admin" });
+      } else {
+        router.push({ name: "user" });
+      }
     })
     .catch((error) => {
       console.log(error);
@@ -103,7 +117,7 @@ function closeSnackBar() {
         <v-card-text>
           <v-text-field v-model="user.email" label="Email" required></v-text-field>
 
-          <v-text-field v-model="user.password" label="Password" required></v-text-field>
+          <v-text-field v-model="user.password" label="Password" type="password" required></v-text-field>
         </v-card-text>
         <v-card-actions>
           <v-btn variant="flat" color="secondary" @click="openCreateAccount()">Create Account</v-btn>
@@ -130,7 +144,7 @@ function closeSnackBar() {
 
             <v-text-field v-model="user.email" label="Email" required></v-text-field>
 
-            <v-text-field v-model="user.password" label="Password" required></v-text-field>
+            <v-text-field v-model="user.password" label="Password" type="password" required></v-text-field>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
