@@ -29,20 +29,9 @@ const router = createRouter({
       component: () => import("./views/Destination.vue"),
     },
     {
-      path: "/recipes",
-      name: "recipes",
-      component: () => import("./views/RecipeList.vue"),
-    },
-    {
-      path: "/recipe/:id",
-      name: "editRecipe",
-      props: true,
-      component: () => import("./views/EditRecipe.vue"),
-    },
-    {
-      path: "/ingredients",
-      name: "ingredients",
-      component: () => import("./views/IngredientList.vue"),
+      path: "/userdestination/:id",
+      name: "userdestination",
+      component: () => import("./views/UserDestination.vue"),
     },
   ],
 });

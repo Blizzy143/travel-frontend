@@ -17,7 +17,11 @@ onMounted(async () => {
 });
 
 function navigateToDestination() {
-  router.push({ name: "destination", params: { id: props.destination.destination_id } });
+  if (user.value.user_type === "admin") {
+    router.push({ name: "destination", params: { id: props.destination.destination_id } });
+  } else {
+    router.push({ name: "userdestination", params: { id: props.destination.destination_id } });
+  }
 }
 </script>
 
