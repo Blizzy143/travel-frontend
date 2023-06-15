@@ -3,7 +3,7 @@ import { onMounted } from "vue";
 import { ref, toRaw } from "vue";
 import { useRouter } from "vue-router";
 import UserServices from "../services/UserServices.js";
-import RecipeCard from "../components/DestinationCard.vue";
+import DestinationCard from "../components/DestinationCard.vue";
 import destinationService from "../services/DestinationService.js";
 
 const router = useRouter();
@@ -96,7 +96,7 @@ function closeSnackBar() {
         </v-col>
       </v-row>
 
-      <RecipeCard v-for="destination in destinations" :key="destination.destination_id" :destination="destination" />
+      <DestinationCard v-for="destination in destinations" :key="destination.destination_id" :destination="destination" />
 
       <v-dialog persistent v-model="isAdd" width="800">
         <v-card class="rounded-lg elevation-5">
