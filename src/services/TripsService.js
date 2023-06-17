@@ -44,6 +44,12 @@ const getTripsByDestination = async (destinationId) => {
   return apiClient.get(`/trips/destination/${destinationId}`);
 };
 
+// Add user to trip
+const addUserToTrip = async (tripId, userId) => {
+  return apiClient.post(`/trips/${tripId}/users/${userId}`);
+};
+
+
 
 
 
@@ -55,5 +61,6 @@ export default {
   getTripById,
   updateTrip,
   deleteTrip,
-  addItenary
+  addItenary,
+  addUserToTrip,
 };

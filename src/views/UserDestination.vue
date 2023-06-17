@@ -64,83 +64,30 @@ async function fetchTrips() {
     });
 }
 
-async function addTrip() {
-  isAdd.value = false;
-  delete newTrip.trip_id;
+async function register(trip) {
+  console.log("registering to trip", trip);
   await tripsService
-    .createTrip(newTrip.value)
-    .then(() => {
-      snackbar.value.value = true;
-      snackbar.value.color = "green";
-      snackbar.value.text = `trip to ${destination.value.name} added successfully!`;
+    .addUserToTrip(trip.trip_id, user.value.id)
+    .then((response) => {
+      console.log("response", response);
+      snackbar.value = {
+        value: true,
+        color: "success",
+        text: "Successfully registered to trip",
+      };
+      fetchTrips();
     })
     .catch((error) => {
-      console.log(error);
-      snackbar.value.value = true;
-      snackbar.value.color = "error";
-      snackbar.value.text = error.response.data.message;
+      console.error("Error in registering to trip", error);
+      snackbar.value = {
+        value: true,
+        color: "error",
+        text: "Error in registering to trip",
+      };
     });
-  await fetchTrips();
 }
 
 
-
-async function updateTrip() {
-  isEdit.value = false;
-  await tripsService.updateTrip(newTrip.value.trip_id, newTrip.value)
-    .then(() => {
-      snackbar.value.value = true;
-      snackbar.value.color = "green";
-      snackbar.value.text = `Trip updated successfully!`;
-    })
-    .catch((error) => {
-      console.log(error);
-      snackbar.value.value = true;
-      snackbar.value.color = "error";
-      snackbar.value.text = error.response.data.message;
-    });
-  await fetchTrips();
-}
-
-
-async function deleteTrip(temp) {
-  await tripsService.deleteTrip(temp.trip_id)
-    .then(() => {
-      snackbar.value.value = true;
-      snackbar.value.color = "green";
-      snackbar.value.text = `${temp.name} deleted successfully!`;
-    })
-    .catch((error) => {
-      console.log(error);
-      snackbar.value.value = true;
-      snackbar.value.color = "error";
-      snackbar.value.text = error.response.data.message;
-    });
-  await fetchTrips();
-}
-
-function openAdd() {
-  newTrip.value.name = undefined;
-  newTrip.value.destination_id = destination.value.destination_id;
-  newTrip.value.user_id = user.value.id;
-  newTrip.value.start_date = undefined;
-  newTrip.value.end_date = undefined;
-  isAdd.value = true;
-}
-
-function openEdit(temp) {
-  console.log("temp", temp);
-  isEdit.value = true;
-  newTrip.value = temp;
-}
-
-function closeAdd() {
-  isAdd.value = false;
-}
-
-function closeEdit() {
-  isEdit.value = false;
-}
 
 function formatDate(date) {
   const options = { year: "numeric", month: "long", day: "numeric" };

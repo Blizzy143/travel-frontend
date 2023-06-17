@@ -221,7 +221,7 @@ function closeSnackBar() {
                 <tr>
                   <th class="text-left">Day</th>
                   <th class="text-left">Date</th>
-                  <th class="text-left">  Place</th>
+                  <th class="text-left">Place</th>
                   <th class="text-left">Hotel</th>
                 </tr>
               </thead>
