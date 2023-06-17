@@ -1,12 +1,14 @@
 <script setup>
 import { onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import destinationService from "../services/DestinationService.js";
 import PlaceService from "../services/PlaceService.js";
 import HotelService from "../services/HotelService.js";
+import tripsService from "../services/TripsService.js";
 
 
 const route = useRoute();
+const router = useRouter();
 
 const destination = ref({});
 const isAdd = ref(false);
@@ -39,6 +41,7 @@ const hotel = ref({
 onMounted(async () => {
   user.value = JSON.parse(localStorage.getItem("user"));
   fetchDestination();
+  getTrips();
 });
 
 
@@ -218,6 +221,125 @@ async function deleteHotel(selectedHotel){
     });
 }
 
+const isAddTrip = ref(false);
+const isEditTrip = ref(false);
+const trips = ref([]);
+
+const newTrip = ref({
+  name: "",
+  destination_id: route.params.id,
+  user_id: "",
+  start_date: "",
+  end_date: "",
+});
+
+function openAddTrip() {
+  isAddTrip.value = true;
+  newTrip.value = {
+    name: "",
+    destination_id: route.params.id,
+    user_id: "",
+    start_date: "",
+    end_date: "",
+  };
+}
+
+// Get the trips for the destination
+
+async function getTrips() {
+  await tripsService
+    .getTripsByDestination(route.params.id)
+    .then((response) => {
+      trips.value = response.data;
+    })
+    .catch((error) => {
+      console.error("Error in fetching trips:", error);
+    });
+}
+
+async function showDetails(plan) {
+  router.push({ name: "plan-details", params: { planId: plan.trip_id, id: destination.value.destination_id } });
+}
+
+// 
+async function deleteTrip(selectedTrip){
+  // Use the trip service to delete a trip
+  await tripsService.deleteTrip(selectedTrip.trip_id)
+    .then((response) => {
+      fetchDestination();
+      closeEditTrip();
+      getTrips();
+      snackbar.value.color = "success";
+      snackbar.value.text = "Trip deleted successfully";
+      snackbar.value.value = true;
+
+    })
+    .catch((error) => {
+      console.error("Error in deleting trip:", error);
+      snackbar.value.color = "error";
+      snackbar.value.text = "Error in deleting trip";
+      snackbar.value.value = true;
+
+    });
+}
+
+async function addTrip() {
+  // Use the trip service to add a trip
+  await tripsService
+    .createTrip(newTrip.value)
+    .then((response) => {
+      fetchDestination();
+      getTrips();
+      closeAddTrip();
+      snackbar.value.color = "success";
+      snackbar.value.text = "Trip added successfully";
+      snackbar.value.value = true;
+    })
+    .catch((error) => {
+      console.error("Error in adding trip:", error);
+      snackbar.value.color = "error";
+      snackbar.value.text = "Error in adding trip";
+      snackbar.value.value = true;
+    });
+}
+
+async function updateTrip() {
+  // Use the trip service to update a trip
+  await tripsService
+    .updateTrip(newTrip.value.trip_id, newTrip.value)
+    .then((response) => {
+      fetchDestination();
+      getTrips();
+      closeEditTrip();
+      snackbar.value.color = "success";
+      snackbar.value.text = "Trip updated successfully";
+      snackbar.value.value = true;
+    })
+    .catch((error) => {
+      console.error("Error in updating trip:", error);
+      snackbar.value.color = "error";
+      snackbar.value.text = "Error in updating trip";
+      snackbar.value.value = true;
+    });
+}
+
+function openEditTrip(temp) {
+  isEditTrip.value = true;
+  newTrip.value = temp;
+}
+
+function closeAddTrip() {
+  isAddTrip.value = false;
+}
+
+function closeEditTrip() {
+  isEditTrip.value = false;
+}
+
+function formatDate(date) {
+  const options = { year: "numeric", month: "long", day: "numeric" };
+  return new Date(date).toLocaleDateString(undefined, options);
+}
 
 
 function closeSnackBar() {
@@ -275,6 +397,48 @@ function closeSnackBar() {
             </v-card>
           </v-col>
 
+
+          <v-col cols="12" sm="8">
+            <v-row align="center" class="mb-4">
+              <v-col cols="10"><v-card-title class="pl-0 text-h4">Trips created in {{ destination.name }}
+                </v-card-title>
+              </v-col>
+              <v-col class="d-flex justify-end" cols="2">
+                <v-btn v-if="user !== null" color="accent" @click="openAddTrip()">Add</v-btn>
+              </v-col>
+            </v-row>
+
+            <v-table class="rounded-lg elevation-5">
+              <thead>
+                <tr>
+                  <th class="text-left">Trip Description</th>
+                  <th class="text-left">Start date</th>
+                  <th class="text-left">End date</th>
+                  <th class="text-left">Edit</th>
+                  <th class="text-left">Delete</th>
+                  <th class="text-left">Plan</th>
+
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="trip in trips" :key="trip.name">
+                  <td>{{ trip.name }}</td>
+                  <td>{{ formatDate(trip.start_date) }}</td>
+                  <td>{{ formatDate(trip.end_date) }}</td>
+                  <td>
+                    <v-icon size="small" icon="mdi-pencil" @click="openEditTrip(trip)"></v-icon>
+                  </td>
+                  <td>
+                    <v-icon size="small" icon="mdi-delete" @click="deleteTrip(trip)"></v-icon>
+                  </td>
+                  <td>
+                    <v-chip @click="showDetails(trip)" label append-icon="mdi-airplane" color="cyan">Details
+                    </v-chip>
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
+          </v-col>
           <v-col cols="12" sm="8">
             <v-row align="center" class="mb-4">
               <v-col cols="10"
@@ -459,6 +623,32 @@ function closeSnackBar() {
               </v-card-actions>
             </v-card>
           </v-dialog>
+
+
+          <v-dialog persistent :model-value="isAddTrip || isEditTrip" width="800">
+            <v-card class="rounded-lg elevation-5">
+              <v-card-item>
+                <v-card-title class="headline mb-2">{{ isAddTrip ? "Add Trip" : isEditTrip ? "Edit trip" : "" }}
+                </v-card-title>
+              </v-card-item>
+              <v-card-text>
+                <v-text-field v-model="newTrip.name" label="Name" required></v-text-field>
+
+                <v-text-field v-model="newTrip.start_date" label="Start date" type="date"></v-text-field>
+                <v-text-field v-model="newTrip.end_date" label="End date" type="date"></v-text-field>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn variant="flat" color="secondary"
+                  @click="isAddTrip ? closeAddTrip() : isEditTrip ? closeEditTrip() : false">Close</v-btn>
+                <v-btn variant="flat" color="primary" @click="isAddTrip ? addTrip() : isEditTrip ? updateTrip() : false">{{
+                  isAddTrip ? "Add Trip " : isEditTrip ? "Update Trip" : ""
+                }}</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+
+
           <v-snackbar v-model="snackbar.value" rounded="pill">
             {{ snackbar.text }}
 

@@ -9,7 +9,7 @@ const getTrips = async () => {
   return apiClient.get('/trips');
 };
 
-const getTripsByDestinationId = async (userId, destinationId) => {
+const getTripsByDestinationIdAndUserId = async (userId, destinationId) => {
   return apiClient.get('/trips', {
     params: {
       userId: userId,
@@ -39,10 +39,19 @@ const addItenary = async (data) => {
   return apiClient.post('/iteneraries', data);
 };
 
+// getTripsByDestinationId
+const getTripsByDestination = async (destinationId) => {
+  return apiClient.get(`/trips/destination/${destinationId}`);
+};
+
+
+
+
 export default {
   createTrip,
   getTrips,
-  getTripsByDestinationId,
+  getTripsByDestination,
+  getTripsByDestinationIdAndUserId,
   getTripById,
   updateTrip,
   deleteTrip,
