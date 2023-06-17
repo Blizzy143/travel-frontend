@@ -55,7 +55,7 @@ async function fetchDestination() {
 async function fetchTrips() {
   console.log("fetching trips");
   await tripsService
-    .getTripsByDestinationId(user.value.id, route.params.id)
+    .getTripsByDestination(route.params.id)
     .then((response) => {
       trips.value = response.data;
     })
@@ -196,11 +196,8 @@ function closeSnackBar() {
 
           <v-col cols="12" sm="8">
             <v-row align="center" class="mb-4">
-              <v-col cols="10"><v-card-title class="pl-0 text-h4">My trips to {{ destination.name }}
+              <v-col cols="10"><v-card-title class="pl-0 text-h4">Trips available in {{ destination.name }}
                 </v-card-title>
-              </v-col>
-              <v-col class="d-flex justify-end" cols="2">
-                <v-btn v-if="user !== null" color="accent" @click="openAdd()">Add</v-btn>
               </v-col>
             </v-row>
 
@@ -210,10 +207,8 @@ function closeSnackBar() {
                   <th class="text-left">Trip Description</th>
                   <th class="text-left">Start date</th>
                   <th class="text-left">End date</th>
-                  <th class="text-left">Edit</th>
-                  <th class="text-left">Delete</th>
-                  <th class="text-left">Plan</th>
-
+                  <th class="text-left">Details</th>
+                  <th class="text-center">Register</th>
                 </tr>
               </thead>
               <tbody>
@@ -222,13 +217,11 @@ function closeSnackBar() {
                   <td>{{ formatDate(trip.start_date) }}</td>
                   <td>{{ formatDate(trip.end_date) }}</td>
                   <td>
-                    <v-icon size="small" icon="mdi-pencil" @click="openEdit(trip)"></v-icon>
+                    <v-chip @click="showDetails(trip)" label append-icon="mdi-airplane" color="cyan">Details
+                    </v-chip>
                   </td>
                   <td>
-                    <v-icon size="small" icon="mdi-delete" @click="deleteTrip(trip)"></v-icon>
-                  </td>
-                  <td>
-                    <v-chip @click="showDetails(trip)" label append-icon="mdi-airplane" color="green">View Plan
+                    <v-chip @click="register(trip)" label append-icon="mdi-plus" color="green">Register to {{ destination.name }} trip
                     </v-chip>
                   </td>
                 </tr>
@@ -236,28 +229,7 @@ function closeSnackBar() {
             </v-table>
           </v-col>
 
-          <v-dialog persistent :model-value="isAdd || isEdit" width="800">
-            <v-card class="rounded-lg elevation-5">
-              <v-card-item>
-                <v-card-title class="headline mb-2">{{ isAdd ? "Add Trip" : isEdit ? "Edit trip" : "" }}
-                </v-card-title>
-              </v-card-item>
-              <v-card-text>
-                <v-text-field v-model="newTrip.name" label="Name" required></v-text-field>
-
-                <v-text-field v-model="newTrip.start_date" label="Start date" type="date"></v-text-field>
-                <v-text-field v-model="newTrip.end_date" label="End date" type="date"></v-text-field>
-              </v-card-text>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn variant="flat" color="secondary"
-                  @click="isAdd ? closeAdd() : isEdit ? closeEdit() : false">Close</v-btn>
-                <v-btn variant="flat" color="primary" @click="isAdd ? addTrip() : isEdit ? updateTrip() : false">{{
-                  isAdd ? "Add Trip " : isEdit ? "Update Trip" : ""
-                }}</v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
+         
 
           <v-snackbar v-model="snackbar.value" rounded="pill">
             {{ snackbar.text }}

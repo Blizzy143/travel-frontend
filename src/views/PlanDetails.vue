@@ -93,20 +93,25 @@ async function selectHotel(item) {
   updateHotel.value = true;
 }
 
-async function updatePlaceCall(place) {
-  selectedIterary.value.place_id = place.id;
-  // delete selectedIterary.value.Place;
-  if (selectedIterary.value.Hotel === null || selectedIterary.value.Hotel === undefined) {
-    // delete selectedIterary.value.Hotel;
-    selectedIterary.value.hotel_id = null;
-  } else {
-    var hotel = selectedIterary.value.Hotel;
-    // delete selectedIterary.value.Hotel;
-    selectedIterary.value.hotel_id = hotel.id;
-  }
-  updatePlace.value = false;
-      updateHotel.value = false;
-  await updateIternary();
+async function addPlaceToTrip(place) {
+
+  ItenarySerice.addPlaceToItinary(selectedIterary.value.itinerary_id, place.id)
+    .then((response) => {
+      console.log("response", response);
+      snackbar.value.color = "success";
+      snackbar.value.text = "Place added successfully";
+      snackbar.value.value = true;
+      updatePlace.value = false;
+      fetchTrip();
+    })
+    .catch((error) => {
+      console.error("Error in adding place:", error);
+      snackbar.value.color = "error";
+      snackbar.value.text = "Error in adding place";
+      snackbar.value.value = true;
+
+    });
+  
 }
 
 async function  updateHotelCall(hotel){
@@ -207,7 +212,7 @@ function closeSnackBar() {
                 </v-card-title>
               </v-col>
               <v-col class="d-flex justify-end" cols="2">
-                <v-btn color="accent" @click="openAdd()">Add</v-btn>
+                <v-btn color="accent" v-if="user !== null && user.user_type === 'admin'" @click="openAdd()">Add</v-btn>
               </v-col>
             </v-row>
 
@@ -216,7 +221,7 @@ function closeSnackBar() {
                 <tr>
                   <th class="text-left">Day</th>
                   <th class="text-left">Date</th>
-                  <th class="text-left">Place</th>
+                  <th class="text-left">  Place</th>
                   <th class="text-left">Hotel</th>
                 </tr>
               </thead>
@@ -225,11 +230,15 @@ function closeSnackBar() {
                   <td>Day {{ trip.Itineraries.indexOf(temp) + 1 }}</td>
                   <td>{{ formatDate(temp.date) }}</td>
                   <td>
-                    <v-chip v-if="temp.Place === null" @click="selectPlace(temp)" label color="cyan" prepend-icon="mdi-barley">
-                      Select Place
+
+                    <v-chip v-if="temp.Places.length > 0 " @click="selectPlace(temp)"  class="mr-1" label color="cyan" prepend-icon="mdi-barley">
+                      {{ temp.Places.map(function(place){
+                        return place.name;
+                      }).join(', ') 
+                      }}
                     </v-chip>
-                    <v-chip v-else @click="selectPlace(temp)" label color="cyan" prepend-icon="mdi-barley">
-                      {{ temp.Place.name }}
+                    <v-chip v-if="user !== null && user.user_type === 'admin'" @click="selectPlace(temp)" label  color="green" prepend-icon="mdi-plus">
+                      Add
                     </v-chip>
                   </td>
                   <td> 
@@ -281,7 +290,7 @@ function closeSnackBar() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr @click="updatePlaceCall(place)" v-for="place in places" :key="place.name">
+                    <tr @click="addPlaceToTrip(place)" v-for="place in places" :key="place.name">
                       <td>{{ place.name }}</td>
                       <td>{{ place.description }}</td>
                       <td>{{ place.address }}</td>
