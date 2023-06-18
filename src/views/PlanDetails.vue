@@ -25,17 +25,15 @@ const snackbar = ref({
   text: "",
 });
 
+const dialog = ref(false);
+
 async function register(trip) {
   console.log("registering to trip", trip);
   await tripsService
     .addUserToTrip(trip.trip_id, user.value.id)
     .then((response) => {
       console.log("response", response);
-      snackbar.value = {
-        value: true,
-        color: "success",
-        text: "Successfully registered to trip",
-      };
+      dialog.value = true;
       getTrips();
     })
     .catch((error) => {
@@ -279,18 +277,19 @@ function closeSnackBar() {
                   <td>Day {{ trip.Itineraries.indexOf(temp) + 1 }}</td>
                   <td>{{ formatDate(temp.date) }}</td>
                   <td>
+                    <v-list v-if="temp.Places.length > 0">
+                      <v-list-item v-for="place in temp.Places" :key="place.name">
+                        <v-chip class="mr-1" label color="cyan" prepend-icon="mdi-barley">
+                          {{ place.name }}
+                        </v-chip>
+                      </v-list-item>
+                    </v-list>
 
-                    <v-chip v-if="temp.Places.length > 0" @click="selectPlace(temp)" class="mr-1" label color="cyan"
-                      prepend-icon="mdi-barley">
-                      {{ temp.Places.map(function (place) {
-                        return place.name;
-                      }).join(', ')
-                      }}
-                    </v-chip>
-                    <v-chip v-if="user !== null && user.user_type === 'admin'" @click="selectPlace(temp)" label
-                      color="green" prepend-icon="mdi-plus">
+                    <v-chip class="ml-4 mb-2" v-if="user !== null && user.user_type === 'admin'"
+                      @click="selectPlace(temp)" label color="green" prepend-icon="mdi-plus">
                       Add
                     </v-chip>
+
                   </td>
                   <td>
                     <v-chip v-if="temp.Hotel === null" label @click="selectHotel(temp)" color="cyan"
@@ -390,6 +389,32 @@ function closeSnackBar() {
             </v-card>
           </v-dialog>
 
+          <v-fade-transition width="800" hide-on-leave>
+            <v-card v-if="dialog" append-icon="$close" class="mx-auto" elevation="16" max-width="800"
+              title="Trip registration">
+              <template v-slot:append>
+                <v-btn icon="$close" variant="text" @click="dialog = false"></v-btn>
+              </template>
+
+              <v-divider></v-divider>
+
+              <div class="py-12 text-center">
+                <v-icon class="mb-6" color="success" icon="mdi-check-circle-outline" size="128"></v-icon>
+
+                <div class="text-h4 font-weight-bold">Registered to trip</div>
+              </div>
+
+              <v-divider></v-divider>
+
+              <div class="pa-4 text-end">
+                <v-btn class="text-none" color="medium-emphasis" min-width="92" rounded variant="outlined"
+                  @click="dialog = false">
+                  Close
+                </v-btn>
+              </div>
+            </v-card>
+          </v-fade-transition>
+
           <v-snackbar v-model="snackbar.value" rounded="pill">
             {{ snackbar.text }}
 
@@ -402,4 +427,5 @@ function closeSnackBar() {
         </v-row>
       </v-container>
     </v-main>
-</v-app></template>
+  </v-app>
+</template>

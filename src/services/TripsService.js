@@ -49,6 +49,12 @@ const addUserToTrip = async (tripId, userId) => {
   return apiClient.post(`/trips/${tripId}/users/${userId}`);
 };
 
+// Remove user from trip
+const removeUserFromTrip = async (tripId, userId) => {
+  return apiClient.delete(`/trips/${tripId}/users/${userId}`);
+};
+
+
 // Get trip by user id
 const getTripsByUserId = async (userId) => {
   return apiClient.get(`/trips/user/${userId}`);
@@ -66,4 +72,5 @@ export default {
   addItenary,
   addUserToTrip,
   getTripsByUserId,
+  removeUserFromTrip,
 };
