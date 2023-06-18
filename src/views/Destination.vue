@@ -346,14 +346,18 @@ function closeSnackBar() {
   snackbar.value.value = false;
 }
 
+function bgHeight() {
+    return this.$vuetify.breakpoint.height - 147 [5]
+  }
+
 </script>
 
 <template>
-  <v-app id="inspire">
-    <v-main class="bg-grey-lighten-3">
-      <v-container>
-        <v-row>
-          <v-col cols="12" sm="4">
+  <v-app id="inspire"  >
+    <v-main class="bg-grey-lighten-3" >
+      <v-container >
+        <v-row >
+          <v-col  cols="12" sm="4">
             <v-card class="mx-auto mb-12" max-width="374">
               <v-img
                 cover
@@ -398,13 +402,13 @@ function closeSnackBar() {
           </v-col>
 
 
-          <v-col cols="12" sm="8">
+          <v-col cols="12" sm="8" class="mt-10">
             <v-row align="center" class="mb-4">
               <v-col cols="10"><v-card-title class="pl-0 text-h4">Trips created in {{ destination.name }}
                 </v-card-title>
               </v-col>
               <v-col class="d-flex justify-end" cols="2">
-                <v-btn v-if="user !== null" color="accent" @click="openAddTrip()">Add</v-btn>
+                <v-btn v-if="user !== null" color="accent" @click="openAddTrip()">Add trip</v-btn>
               </v-col>
             </v-row>
 
@@ -439,7 +443,7 @@ function closeSnackBar() {
               </tbody>
             </v-table>
           </v-col>
-          <v-col cols="12" sm="8">
+          <v-col cols="12" sm="12">
             <v-row align="center" class="mb-4">
               <v-col cols="10"
                 ><v-card-title class="pl-0 text-h4"
@@ -448,7 +452,7 @@ function closeSnackBar() {
               </v-col>
               <v-col class="d-flex justify-end" cols="2">
                 <v-btn v-if="user !== null" color="accent" @click="openAdd()"
-                  >Add</v-btn
+                  >Add place</v-btn
                 >
               </v-col>
             </v-row>
@@ -488,9 +492,8 @@ function closeSnackBar() {
             </v-table>
           </v-col>
           
-          <v-col cols="12" sm="4">
-          </v-col>
-          <v-col cols="12" sm="8">
+
+          <v-col cols="12" sm="12">
             <v-row align="center" class="mb-4">
               <v-col cols="10"
                 ><v-card-title class="pl-0 text-h4"
@@ -499,7 +502,7 @@ function closeSnackBar() {
               </v-col>
               <v-col class="d-flex justify-end" cols="2">
                 <v-btn v-if="user !== null" color="accent" @click="openAddHotel()"
-                  >Add</v-btn
+                  >Add hotel</v-btn
                 >
               </v-col>
             </v-row>

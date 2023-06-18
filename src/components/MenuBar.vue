@@ -16,13 +16,6 @@ onMounted(() => {
 });
 
 function logout() {
-  UserServices.logoutUser()
-    .then((data) => {
-      console.log(data);
-    })
-    .catch((error) => {
-      console.log(error);
-    });
   localStorage.removeItem("user");
   user.value = null;
   router.push({ name: "login" });

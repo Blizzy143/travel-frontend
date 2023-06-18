@@ -11,6 +11,7 @@ const route = useRoute();
 const router = useRouter();
 
 
+const dialog = ref(false);
 
 const user = ref(null);
 const snackbar = ref({
@@ -27,10 +28,27 @@ onMounted(async () => {
 
 
 
-
-
-
 const trips = ref([]);
+
+
+// Unregister from a trip
+
+async function unregister(trip) {
+  await tripsService
+    .removeUserFromTrip(trip.trip_id, user.value.id)
+    .then((response) => {
+     dialog.value = true;
+      getTrips();
+    })
+    .catch((error) => {
+      console.error("Error in unregistering from trip:", error);
+      snackbar.value = {
+        value: true,
+        color: "error",
+        text: "Error in unregistering from trip",
+      };
+    });
+}
 
 
 // Get the trips for the destination
@@ -82,6 +100,7 @@ function closeSnackBar() {
                   <th class="text-left">Start date</th>
                   <th class="text-left">End date</th>
                   <th class="text-left">Plan</th>
+                  <th class="text-left">Action</th>
 
                 </tr>
               </thead>
@@ -94,11 +113,40 @@ function closeSnackBar() {
                     <v-chip @click="showDetails(trip)" label append-icon="mdi-airplane" color="cyan">Details
                     </v-chip>
                   </td>
+                  <td>
+                    <v-chip @click="unregister(trip)" label append-icon="mdi-location-exit" color="red">Un-register
+                    </v-chip>
+                  </td>
                 </tr>
               </tbody>
             </v-table>
           </v-col>
 
+          <v-fade-transition width="800" hide-on-leave>
+            <v-card v-if="dialog" append-icon="$close" class="mx-auto" elevation="16" max-width="800"
+              title="Trip status">
+              <template v-slot:append>
+                <v-btn icon="$close" variant="text" @click="dialog = false"></v-btn>
+              </template>
+
+              <v-divider></v-divider>
+
+              <div class="py-12 text-center">
+                <v-icon class="mb-6" color="success" icon="mdi-check-circle-outline" size="128"></v-icon>
+
+                <div class="text-h4 font-weight-bold">Un-registered to trip</div>
+              </div>
+
+              <v-divider></v-divider>
+
+              <div class="pa-4 text-end">
+                <v-btn class="text-none" color="medium-emphasis" min-width="92" rounded variant="outlined"
+                  @click="dialog = false">
+                  Close
+                </v-btn>
+              </div>
+            </v-card>
+          </v-fade-transition>
 
 
           <v-snackbar v-model="snackbar.value" rounded="pill">
