@@ -64,30 +64,6 @@ async function fetchTrips() {
     });
 }
 
-async function register(trip) {
-  console.log("registering to trip", trip);
-  await tripsService
-    .addUserToTrip(trip.trip_id, user.value.id)
-    .then((response) => {
-      console.log("response", response);
-      snackbar.value = {
-        value: true,
-        color: "success",
-        text: "Successfully registered to trip",
-      };
-      fetchTrips();
-    })
-    .catch((error) => {
-      console.error("Error in registering to trip", error);
-      snackbar.value = {
-        value: true,
-        color: "error",
-        text: "Error in registering to trip",
-      };
-    });
-}
-
-
 
 function formatDate(date) {
   const options = { year: "numeric", month: "long", day: "numeric" };
@@ -155,7 +131,6 @@ function closeSnackBar() {
                   <th class="text-left">Start date</th>
                   <th class="text-left">End date</th>
                   <th class="text-left">Details</th>
-                  <th class="text-center">Register</th>
                 </tr>
               </thead>
               <tbody>
@@ -165,10 +140,6 @@ function closeSnackBar() {
                   <td>{{ formatDate(trip.end_date) }}</td>
                   <td>
                     <v-chip @click="showDetails(trip)" label append-icon="mdi-airplane" color="cyan">Details
-                    </v-chip>
-                  </td>
-                  <td>
-                    <v-chip @click="register(trip)" label append-icon="mdi-plus" color="green">Register to {{ destination.name }} trip
                     </v-chip>
                   </td>
                 </tr>
