@@ -49,7 +49,7 @@ function logout() {
       <v-btn v-if="user === null" class="mx-2" :to="{ name: 'login' }">
         Login
       </v-btn>
-      <v-btn  v-if=" user !== null && user.user_type === 'user'" class="mx-2">
+      <v-btn  v-if=" user !== null && user.user_type === 'user'" :to="{ name: 'user-trips' }" class="mx-2">
         My trips
       </v-btn>
       <v-menu v-if="user !== null" min-width="200px" rounded>
