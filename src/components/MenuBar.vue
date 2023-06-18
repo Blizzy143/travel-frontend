@@ -34,7 +34,7 @@ function logout() {
     <v-app-bar color="primary" app dark>
       <router-link :to="{ name: 'destinations' }">
         <v-img
-          class="mx-2"
+          class="mx-5"
           :src="logoURL"
           height="50"
           width="50"

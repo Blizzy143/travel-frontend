@@ -25,11 +25,35 @@ const snackbar = ref({
   text: "",
 });
 
+async function register(trip) {
+  console.log("registering to trip", trip);
+  await tripsService
+    .addUserToTrip(trip.trip_id, user.value.id)
+    .then((response) => {
+      console.log("response", response);
+      snackbar.value = {
+        value: true,
+        color: "success",
+        text: "Successfully registered to trip",
+      };
+      getTrips();
+    })
+    .catch((error) => {
+      console.error("Error in registering to trip", error);
+      snackbar.value = {
+        value: true,
+        color: "error",
+        text: "Error in registering to trip",
+      };
+    });
+}
+
 
 onMounted(async () => {
   user.value = JSON.parse(localStorage.getItem("user"));
   fetchDestination();
   fetchTrip();
+  getTrips();
 });
 
 
@@ -92,6 +116,27 @@ async function selectHotel(item) {
   selectedIterary.value = item;
   updateHotel.value = true;
 }
+// Get the trips for the destination
+
+const usertrips = ref([]);
+const isAlreadyRegistered = ref(false);
+
+async function getTrips() {
+  await tripsService
+    .getTripsByUserId(user.value.id)
+    .then((response) => {
+      usertrips.value = response.data;
+      usertrips.value.forEach((trip) => {
+        console.log(trip);
+        if (trip.trip_id === parseInt(route.params.planId)) {
+          isAlreadyRegistered.value = true;
+        }
+      });
+    })
+    .catch((error) => {
+      console.error("Error in fetching trips:", error);
+    });
+}
 
 async function addPlaceToTrip(place) {
 
@@ -102,7 +147,7 @@ async function addPlaceToTrip(place) {
       snackbar.value.text = "Place added successfully";
       snackbar.value.value = true;
       updatePlace.value = false;
-      fetchTrip();
+      getTrips();
     })
     .catch((error) => {
       console.error("Error in adding place:", error);
@@ -111,10 +156,10 @@ async function addPlaceToTrip(place) {
       snackbar.value.value = true;
 
     });
-  
+
 }
 
-async function  updateHotelCall(hotel){
+async function updateHotelCall(hotel) {
   selectedIterary.value.hotel_id = hotel.id;
   // delete selectedIterary.value.Hotel;
   if (selectedIterary.value.Place === null || selectedIterary.value.Place === undefined) {
@@ -126,7 +171,7 @@ async function  updateHotelCall(hotel){
     selectedIterary.value.place_id = place.id;
   }
   updatePlace.value = false;
-      updateHotel.value = false;
+  updateHotel.value = false;
   await updateIternary();
 }
 
@@ -211,8 +256,12 @@ function closeSnackBar() {
               <v-col cols="10"><v-card-title v-if="trip" class="pl-0 text-h4">Itenaries fo the trip {{ trip.name }}
                 </v-card-title>
               </v-col>
-              <v-col class="d-flex justify-end" cols="2">
-                <v-btn color="accent" v-if="user !== null && user.user_type === 'admin'" @click="openAdd()">Add</v-btn>
+              <v-col v-if="user !== null && user.user_type === 'admin'" class="d-flex justify-end" cols="2">
+                <v-btn color="accent" @click="openAdd()">Add</v-btn>
+              </v-col>
+              <v-col v-else class="d-flex justify-end" cols="2">
+                <v-btn v-if="isAlreadyRegistered" color="success">Registered</v-btn>
+                <v-btn v-else color="accent" @click="register(trip)">Register</v-btn>
               </v-col>
             </v-row>
 
@@ -231,21 +280,24 @@ function closeSnackBar() {
                   <td>{{ formatDate(temp.date) }}</td>
                   <td>
 
-                    <v-chip v-if="temp.Places.length > 0 " @click="selectPlace(temp)"  class="mr-1" label color="cyan" prepend-icon="mdi-barley">
-                      {{ temp.Places.map(function(place){
+                    <v-chip v-if="temp.Places.length > 0" @click="selectPlace(temp)" class="mr-1" label color="cyan"
+                      prepend-icon="mdi-barley">
+                      {{ temp.Places.map(function (place) {
                         return place.name;
-                      }).join(', ') 
+                      }).join(', ')
                       }}
                     </v-chip>
-                    <v-chip v-if="user !== null && user.user_type === 'admin'" @click="selectPlace(temp)" label  color="green" prepend-icon="mdi-plus">
+                    <v-chip v-if="user !== null && user.user_type === 'admin'" @click="selectPlace(temp)" label
+                      color="green" prepend-icon="mdi-plus">
                       Add
                     </v-chip>
                   </td>
-                  <td> 
-                    <v-chip v-if="temp.Hotel === null" label @click="selectHotel(temp)" color="cyan" prepend-icon="mdi-bed">
+                  <td>
+                    <v-chip v-if="temp.Hotel === null" label @click="selectHotel(temp)" color="cyan"
+                      prepend-icon="mdi-bed">
                       Select hotel
                     </v-chip>
-                  
+
                     <v-chip v-else label @click="selectHotel(temp)" color="cyan" prepend-icon="mdi-bed">
                       {{ temp.Hotel.name }}
                     </v-chip>
@@ -350,5 +402,4 @@ function closeSnackBar() {
         </v-row>
       </v-container>
     </v-main>
-  </v-app>
-</template>
+</v-app></template>

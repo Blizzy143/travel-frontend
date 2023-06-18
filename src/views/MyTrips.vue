@@ -73,9 +73,6 @@ function closeSnackBar() {
               <v-col cols="10"><v-card-title class="pl-0 text-h4">Trips registered
                 </v-card-title>
               </v-col>
-              <v-col class="d-flex justify-end" cols="2">
-                <v-btn v-if="user !== null" color="accent" @click="openAddTrip()">Add</v-btn>
-              </v-col>
             </v-row>
 
             <v-table class="rounded-lg elevation-5">
